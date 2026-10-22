@@ -22,19 +22,32 @@ public static class InfrastructureServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Pedidos");
-
-        if (string.IsNullOrWhiteSpace(connectionString))
+        // La cadena de conexión se resuelve en tiempo de resolución del contexto (y no al
+        // registrar los servicios) para que la configuración final del host sea la que manda.
+        services.AddDbContext<AppDbContext>((serviceProvider, options) =>
         {
-            throw new InvalidOperationException(
-                "No se ha configurado la cadena de conexión 'ConnectionStrings:Pedidos'. " +
-                "Defínela en appsettings.json, en el archivo .env (ConnectionStrings__Pedidos) " +
-                "o en una variable de entorno.");
-        }
+            var configuracion = serviceProvider.GetRequiredService<IConfiguration>();
+            var connectionString = configuracion.GetConnectionString("Pedidos");
 
-        services.AddDbContext<AppDbContext>(options =>
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "No se ha configurado la cadena de conexión 'ConnectionStrings:Pedidos'. " +
+                    "Defínela en appsettings.json, en el archivo .env (ConnectionStrings__Pedidos) " +
+                    "o en una variable de entorno.");
+            }
+
             options.UseSqlServer(connectionString, sql =>
-                sql.MigrationsAssembly(typeof(AppDbContext).Assembly.GetName().Name)));
+            {
+                sql.MigrationsAssembly(typeof(AppDbContext).Assembly.GetName().Name);
+
+                // Reintentos ante fallos transitorios de SQL Server (red, timeouts, reinicios).
+                sql.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorNumbersToAdd: null);
+            });
+        });
 
         services.AddScoped<IPedidoRepository, PedidoRepository>();
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
