@@ -73,6 +73,10 @@ docker compose ps
 
 > La contraseña de `sa` se define en `MSSQL_SA_PASSWORD` dentro de `.env` (ignorado por git).
 > El API lee la cadena de conexión de `ConnectionStrings__Pedidos` en ese mismo archivo.
+>
+> **Nota:** si cambias `MSSQL_SA_PASSWORD` después del primer arranque, SQL Server conserva la
+> contraseña original en el volumen. Borra el volumen y vuelve a levantar el contenedor:
+> `docker compose down -v && docker compose up -d db`.
 
 ### 3.2. API
 
