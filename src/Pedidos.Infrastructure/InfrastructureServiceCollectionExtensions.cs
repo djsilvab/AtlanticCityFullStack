@@ -40,6 +40,19 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddSingleton<IPasswordHasher, PasswordHasherService>();
+        services.AddSingleton<ITokenService, JwtTokenService>();
+
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(JwtOptions.SectionName))
+            .Validate(options => !string.IsNullOrWhiteSpace(options.Key) && options.Key.Length >= 32,
+                "La clave de firma JWT debe tener al menos 32 caracteres. Configúrala en 'Jwt:Key'.")
+            .Validate(options => !string.IsNullOrWhiteSpace(options.Issuer),
+                "El emisor del token JWT es obligatorio. Configúralo en 'Jwt:Issuer'.")
+            .Validate(options => !string.IsNullOrWhiteSpace(options.Audience),
+                "La audiencia del token JWT es obligatoria. Configúrala en 'Jwt:Audience'.")
+            .Validate(options => options.ExpiracionMinutos > 0,
+                "La vida del token JWT debe ser mayor que cero. Configúrala en 'Jwt:ExpiracionMinutos'.")
+            .ValidateOnStart();
 
         return services;
     }

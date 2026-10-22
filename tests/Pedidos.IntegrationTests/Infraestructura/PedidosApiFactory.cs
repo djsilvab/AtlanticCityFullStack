@@ -1,8 +1,12 @@
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Pedidos.Application.Auth.DTOs;
 using Pedidos.Application.Auth.Interfaces;
 using Pedidos.Infrastructure.Configuration;
 using Pedidos.Infrastructure.Persistence;
@@ -64,6 +68,34 @@ public sealed class PedidosApiFactory : WebApplicationFactory<Program>, IAsyncLi
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await context.Pedidos.IgnoreQueryFilters().ExecuteDeleteAsync();
+    }
+
+    /// <summary>Cliente HTTP contra la API de pruebas.</summary>
+    public HttpClient CrearCliente() => CreateClient();
+
+    /// <summary>Inicia sesión y devuelve el token JWT.</summary>
+    public async Task<string> ObtenerTokenAsync(string email, string password)
+    {
+        using var cliente = CrearCliente();
+
+        using var respuesta = await cliente.PostAsJsonAsync("/auth/login", new { email, password });
+
+        respuesta.EnsureSuccessStatusCode();
+
+        var contenido = await respuesta.Content.ReadFromJsonAsync<LoginResponse>();
+
+        return contenido!.Token;
+    }
+
+    /// <summary>Cliente HTTP con el token de un usuario concreto.</summary>
+    public async Task<HttpClient> CrearClienteAutenticadoAsync(string email, string password)
+    {
+        var token = await ObtenerTokenAsync(email, password);
+        var cliente = CrearCliente();
+
+        cliente.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        return cliente;
     }
 
     private static string ObtenerConnectionString()
