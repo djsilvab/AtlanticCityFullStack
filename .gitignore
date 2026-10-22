@@ -1,0 +1,67 @@
+# ===== .NET =====
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+TestResults/
+[Tt]est[Rr]esult*/
+coverage/
+*.coverage
+*.coveragexml
+*.nupkg
+*.snupkg
+.dotnet/
+project.lock.json
+launchSettings.local.json
+
+# ===== Secretos y configuración local =====
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+appsettings.Local.json
+secrets.json
+*.pfx
+*.key
+
+# ===== Node / Frontend =====
+node_modules/
+frontend/dist/
+frontend/build/
+frontend/coverage/
+frontend/.vite/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.eslintcache
+
+# ===== Base de datos local =====
+*.mdf
+*.ldf
+*.bak
+*.db
+*.sqlite
+*.sqlite3
+mssql-data/
+pgdata/
+
+# ===== IDEs =====
+.idea/
+*.swp
+*.swo
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.code-workspace
+
+# ===== Sistema operativo =====
+.DS_Store
+Thumbs.db
+Desktop.ini
