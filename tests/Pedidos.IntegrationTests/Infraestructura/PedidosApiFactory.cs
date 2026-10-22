@@ -20,8 +20,7 @@ namespace Pedidos.IntegrationTests.Infraestructura;
 /// </summary>
 public sealed class PedidosApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private const string ConnectionStringPorDefecto =
-        "Server=localhost,1433;Database=Pedidos_Tests;User Id=sa;Password=;TrustServerCertificate=True;Encrypt=False";
+    private const string ConnectionStringPorDefecto = ConexionTest.ConnectionStringPorDefecto;
 
     private string _connectionString = ConnectionStringPorDefecto;
 
@@ -39,6 +38,10 @@ public sealed class PedidosApiFactory : WebApplicationFactory<Program>, IAsyncLi
             configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:Pedidos"] = _connectionString,
+
+                // En las pruebas el límite de intentos se agota de forma intencionada
+                // en un caso concreto; el resto usa un margen amplio.
+                ["RateLimiting:LoginPorMinuto"] = "1000",
             });
         });
     }
@@ -98,22 +101,5 @@ public sealed class PedidosApiFactory : WebApplicationFactory<Program>, IAsyncLi
         return cliente;
     }
 
-    private static string ObtenerConnectionString()
-    {
-        var desdeEntorno = Environment.GetEnvironmentVariable("ConnectionStrings__PedidosTests");
-
-        if (!string.IsNullOrWhiteSpace(desdeEntorno))
-        {
-            return desdeEntorno;
-        }
-
-        var desdeArchivo = EnvFile.Read();
-
-        if (desdeArchivo.TryGetValue("ConnectionStrings__PedidosTests", out var valor) && !string.IsNullOrWhiteSpace(valor))
-        {
-            return valor;
-        }
-
-        return ConnectionStringPorDefecto;
-    }
+    private static string ObtenerConnectionString() => ConexionTest.Obtener();
 }
