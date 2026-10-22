@@ -1,0 +1,23 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <!--
+      CA1848: el proyecto registra con Serilog usando plantillas de mensaje (logging estructurado),
+      no con los delegates generados por LoggerMessage, así que la regla no aplica.
+    -->
+    <NoWarn>$(NoWarn);CA1848</NoWarn>
+  </PropertyGroup>
+
+  <!--
+    Los proyectos de producción activan TreatWarningsAsErrors en su propio .csproj.
+    Los proyectos de prueba lo desactivan explícitamente para no bloquear el flujo
+    con warnings de herramientas de test.
+  -->
+
+</Project>
