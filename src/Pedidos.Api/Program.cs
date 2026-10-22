@@ -1,21 +1,31 @@
 using System.Text.Json.Serialization;
 using FluentValidation;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using Pedidos.Api.Configuration;
 using Pedidos.Api.Extensions;
 using Pedidos.Api.Filters;
 using Pedidos.Api.Handlers;
+using Pedidos.Api.Middleware;
 using Pedidos.Application.Auth.DTOs;
 using Pedidos.Infrastructure;
 using Pedidos.Infrastructure.Configuration;
 using Pedidos.Infrastructure.Persistence;
 using Pedidos.Infrastructure.Seeding;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 EnvFile.LoadIntoEnvironment();
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Application", "Pedidos.Api"));
 
 // En Development, si no hay clave JWT configurada se genera una efímera en memoria
 // para que el proyecto arranque sin secretos versionados (decisión D14).
@@ -23,6 +33,9 @@ if (builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(builder.Con
 {
     builder.Configuration["Jwt:Key"] = GeneradorClaveJwt.Generar();
 }
+
+var corsOptions = new CorsOptions();
+builder.Configuration.GetSection(CorsOptions.SectionName).Bind(corsOptions);
 
 builder.Services
     .AddControllers(options => options.Filters.Add<ValidacionFluentValidationFilter>())
@@ -37,6 +50,19 @@ builder.Services.AddProblemDetails(options =>
 });
 
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
+
+builder.Services.AddCors(options => options.AddPolicy(
+    CorsOptions.SectionName,
+    policy => policy
+        .WithOrigins(corsOptions.AllowedOrigins)
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .WithExposedHeaders("Location")));
+
+builder.Services.AddRateLimitingLogin();
+
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>("database", tags: ["ready"]);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -78,6 +104,15 @@ builder.Services.AddScoped<Pedidos.Application.Pedidos.Services.PedidoService>()
 
 var app = builder.Build();
 
+// Validación de arranque: sin cadena de configuración la API no puede funcionar.
+if (string.IsNullOrWhiteSpace(app.Configuration.GetConnectionString("Pedidos")))
+{
+    throw new InvalidOperationException(
+        "No se ha configurado la cadena de conexión 'ConnectionStrings:Pedidos'. " +
+        "Defínela en appsettings.json, en el archivo .env (ConnectionStrings__Pedidos) " +
+        "o en una variable de entorno.");
+}
+
 if (builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("Jwt__Key")))
 {
     app.Logger.LogWarning(
@@ -85,8 +120,20 @@ if (builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(Environment
         "Los tokens dejarán de ser válidos al reiniciar la API.");
 }
 
+app.UseMiddleware<ContextoLogMiddleware>();
+app.UseSerilogRequestLogging();
+
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
+app.UseMiddleware<CabecerasSeguridadMiddleware>();
+
+app.UseCors(CorsOptions.SectionName);
 
 if (app.Environment.IsDevelopment())
 {
@@ -94,10 +141,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = HealthCheckRespuesta.EscribirAsync,
+}).AllowAnonymous();
 
 // En el entorno de test la base de datos la prepara el fixture de integración.
 if (!app.Environment.IsEnvironment("Testing"))
@@ -109,7 +162,13 @@ app.Run();
 
 static async Task InicializarBaseDeDatosAsync(WebApplication app)
 {
-    await DatabaseInitializer.MigrarAsync(app.Services, app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Database"));
+    var connectionString = app.Configuration.GetConnectionString("Pedidos")
+        ?? throw new InvalidOperationException("No se ha configurado la cadena de conexión 'ConnectionStrings:Pedidos'.");
+
+    await DatabaseInitializer.MigrarAsync(
+        connectionString,
+        app.Services,
+        app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Database"));
 
     if (app.Environment.IsDevelopment())
     {
