@@ -5,7 +5,7 @@ using Pedidos.Domain.Entities;
 namespace Pedidos.Application.Pedidos.Validators;
 
 /// <summary>
-/// Reglas de validación de la actualización de un pedido (RF-02 y RF-03).
+/// Reglas de validación de la actualización de un pedido.
 /// </summary>
 public sealed class ActualizarPedidoRequestValidator : AbstractValidator<ActualizarPedidoRequest>
 {

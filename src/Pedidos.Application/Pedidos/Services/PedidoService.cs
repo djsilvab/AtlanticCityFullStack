@@ -8,7 +8,7 @@ using Pedidos.Domain.Entities;
 namespace Pedidos.Application.Pedidos.Services;
 
 /// <summary>
-/// Caso de uso del CRUD de pedidos. Contiene las reglas de negocio (RF-02 y RF-03);
+/// Caso de uso del CRUD de pedidos. Contiene las reglas de negocio;
 /// los controllers solo traducen HTTP a estos casos de uso.
 /// </summary>
 public sealed class PedidoService

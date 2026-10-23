@@ -208,7 +208,7 @@ de modo que también validan el esquema y las migraciones.
 | D8 | **Token JWT en `sessionStorage`** | Sencillez y ausencia de cookies; trade-off conocido: un XSS puede leer el token. La alternativa recomendada en producción es cookie `httpOnly` + `SameSite=Strict` + CSRF token |
 | D9 | **Seed de usuarios en `Development`** | Facilita la evaluación; en otros entornos no se ejecuta |
 | D10 | **Puertos 5080 / 5173 / 1433** | Estándar y sin conflictos |
-| D11 | **Tests de integración contra SQL Server real** | Maxima fidelidad (índices únicos, `decimal(10,2)`, query filters); a cambio, requieren Docker |
+| D11 | **Tests de integración contra SQL Server real** | Máxima fidelidad (índices únicos, `decimal(10,2)`, query filters); a cambio, requieren Docker |
 | D12 | **`dotnet-ef` como local tool (8.0.32)** | El `dotnet ef` global (10.x) no es compatible con EF Core 8 |
 | D13 | **FluentAssertions 7.x** | La 8.x exige licencia comercial; la 7.x es Apache-2.0 |
 | D14 | **Clave JWT fuera del repo** | Si no está configurada, en `Development` se genera una clave efímera en memoria (warning en el log); en otros entornos el arranque falla indicando el comando exacto |
@@ -282,11 +282,9 @@ heredan el token automáticamente.
 
 ```
 .
-├── AGENTS.md                    # reglas de trabajo del proyecto
 ├── docker-compose.yml           # SQL Server 2022 (healthcheck + volumen)
 ├── .env.example                 # plantilla de variables (sin secretos)
 ├── db/                          # 01-schema.sql y 02-seed.sql
-├── docs/                        # requisitos, planificación y decisiones
 ├── postman/                     # colección Postman
 ├── src/
 │   ├── Pedidos.Domain/          # entidades, enums, excepciones (sin dependencias)
@@ -325,6 +323,6 @@ docker compose down -v
 
 ## 13. Entrega
 
-- Historial con **Conventional Commits** y una rama por fase (`feature/f1-…` … `feature/f5-…`).
+- Historial con **Conventional Commits**.
 - Etiqueta final: `v1.0.0` sobre `main`.
 - Sin secretos, sin `bin/`, `obj/`, `node_modules/` ni artefactos de build versionados.

@@ -5,7 +5,7 @@ using Pedidos.Domain.Entities;
 namespace Pedidos.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// Configuración de la tabla <c>Pedidos</c> (RF-06).
+/// Configuración de la tabla <c>Pedidos</c>.
 /// </summary>
 public sealed class PedidoConfiguration : IEntityTypeConfiguration<Pedido>
 {

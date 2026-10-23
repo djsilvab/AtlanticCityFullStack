@@ -5,7 +5,7 @@ using Pedidos.Domain.Entities;
 namespace Pedidos.Application.Pedidos.Validators;
 
 /// <summary>
-/// Reglas de validación de la creación de un pedido (RF-02 y RF-03).
+/// Reglas de validación de la creación de un pedido.
 /// </summary>
 public sealed class CrearPedidoRequestValidator : AbstractValidator<CrearPedidoRequest>
 {

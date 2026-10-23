@@ -4,7 +4,7 @@ using Pedidos.Application.Auth.DTOs;
 namespace Pedidos.Application.Auth.Validators;
 
 /// <summary>
-/// Reglas de validación del inicio de sesión (RF-01).
+/// Reglas de validación del inicio de sesión.
 /// </summary>
 public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
