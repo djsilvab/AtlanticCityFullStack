@@ -41,7 +41,7 @@ Regla de dependencias: `Api → Application, Infrastructure` · `Infrastructure 
 | `src/Pedidos.Application` | Casos de uso (`PedidoService`, `AuthService`), DTOs, validadores FluentValidation, puertos (`IPedidoRepository`, `IUsuarioRepository`, `IUnitOfWork`, `ITokenService`, `IPasswordHasher`) |
 | `src/Pedidos.Infrastructure` | `AppDbContext` + configuraciones EF, repositorios, `JwtTokenService`, hashing, seed, migraciones, pipeline de Polly |
 | `src/Pedidos.Api` | Controllers, middleware, `IExceptionHandler`, DI, Swagger, CORS, rate limiting, health check |
-| `frontend` | SPA React organized by feature (`auth`, `pedidos`) + componentes compartidos |
+| `frontend` | SPA React organizada por feature (`auth`, `pedidos`) + componentes compartidos |
 
 ---
 
