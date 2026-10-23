@@ -49,7 +49,7 @@ Regla de dependencias: `Api → Application, Infrastructure` · `Infrastructure 
 
 | Herramienta | Versión mínima | Notas |
 |---|---|---|
-| .NET SDK | **8.0** | El proyecto apunta a `net8.0` (fallback del enunciado: no hay SDK 9 en la máquina de desarrollo) |
+| .NET SDK | **8.0** | El enunciado permite .NET 8 o 9; se eligió 8 (LTS) |
 | Node.js | 20.19+ / 22.12+ | Probado con Node 22.23 |
 | Docker Desktop | Cualquier versión reciente | Solo para SQL Server 2022 |
 | Git | 2.30+ | — |
@@ -198,7 +198,7 @@ de modo que también validan el esquema y las migraciones.
 
 | # | Decisión | Motivo / trade-off |
 |---|---|---|
-| D1 | **`net8.0`** (no .NET 9) | No hay SDK 9 instalado; 8 es LTS y cumple el enunciado |
+| D1 | **`net8.0`** (elegido sobre .NET 9) | El enunciado permite .NET 8 o 9; se eligió 8 (LTS) |
 | D2 | **SQL Server 2022 en Docker** | Reproducible con `docker compose`; el modelo es T-SQL |
 | D3 | **Sin MediatR ni AutoMapper** | Menos dependencias, servicios legibles; el mapeo es manual y explícito |
 | D4 | **Controllers** (no Minimal APIs) | Encaja con `[Authorize]` y con los atributos de rol del enunciado |
